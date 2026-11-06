@@ -8,7 +8,7 @@ export function AppLayout() {
   const location = useLocation()
 
   return (
-    <div className="min-h-screen bg-mist text-ink">
+    <div className="min-h-screen bg-[#f4f8fb] text-[#0f2744] transition-colors duration-200 dark:bg-[#090e1a] dark:text-slate-100">
       <Sidebar open={open} onClose={() => setOpen(false)} />
       <div className="lg:pl-72">
         <TopBar path={location.pathname} onMenu={() => setOpen(true)} />

@@ -88,7 +88,7 @@ def _get_client():
     global _client
     if not gemini_is_configured():
         raise GeminiServiceError(
-            "Gemini is not configured. Add GEMINI_API_KEY to the backend .env file and restart the API.",
+            "Clinical analysis service is not configured. Add credentials to backend .env.",
             "missing_config",
             503,
         )
@@ -100,7 +100,7 @@ def _get_client():
         from google.genai import types
     except ImportError as exc:
         raise GeminiServiceError(
-            "The Google GenAI SDK is not installed in the backend environment.",
+            "Clinical intelligence engine dependencies are missing.",
             "missing_sdk",
             503,
         ) from exc
@@ -127,7 +127,7 @@ def _classify_sdk_error(exc: Exception) -> GeminiServiceError:
 
     if "timeout" in text or "timed out" in text or "deadline" in text:
         return GeminiServiceError(
-            "The Gemini request timed out. No remarks were generated. You can retry the analysis.",
+            "The clinical assessment request timed out. You can retry the evaluation.",
             "timeout",
             504,
         )
@@ -139,7 +139,7 @@ def _classify_sdk_error(exc: Exception) -> GeminiServiceError:
         or "rate limit" in text
     ):
         return GeminiServiceError(
-            "The Gemini API quota has been reached. No remarks were generated. You can retry later.",
+            "Clinical assessment service capacity reached. Please retry shortly.",
             "quota",
             429,
         )
@@ -151,7 +151,7 @@ def _classify_sdk_error(exc: Exception) -> GeminiServiceError:
         or status_text in {"401", "403", "permission_denied", "unauthenticated"}
     ):
         return GeminiServiceError(
-            "Gemini rejected the API credentials. Check GEMINI_API_KEY in the backend .env file.",
+            "Clinical intelligence credentials invalid. Please check backend configuration.",
             "auth",
             502,
         )
@@ -163,12 +163,12 @@ def _classify_sdk_error(exc: Exception) -> GeminiServiceError:
         or status in {500, 502, 503}
     ):
         return GeminiServiceError(
-            "The Gemini service could not be reached. No remarks were generated. You can retry the analysis.",
+            "Clinical intelligence service could not be reached. You can retry the evaluation.",
             "connection",
             502,
         )
     return GeminiServiceError(
-        "The Gemini request failed. No remarks were generated. You can retry the analysis.",
+        "Clinical assessment could not be generated. You can retry the evaluation.",
         "api_error",
         502,
     )
@@ -184,14 +184,14 @@ def _extract_json(raw_text: str) -> dict:
         parsed = json.loads(cleaned)
     except json.JSONDecodeError as exc:
         raise GeminiServiceError(
-            "Gemini returned a response that was not valid JSON. No remarks were saved.",
+            "Clinical service returned an unparseable response. No remarks were saved.",
             "invalid_response",
             502,
         ) from exc
 
     if not isinstance(parsed, dict):
         raise GeminiServiceError(
-            "Gemini returned JSON in an unexpected shape. No remarks were saved.",
+            "Clinical response format was invalid. No remarks were saved.",
             "invalid_response",
             502,
         )
@@ -201,7 +201,7 @@ def _extract_json(raw_text: str) -> dict:
         value = parsed.get(field)
         if not isinstance(value, str) or not value.strip():
             raise GeminiServiceError(
-                "Gemini returned JSON without every required observation. No remarks were saved.",
+                "Incomplete clinical observations received. No remarks were saved.",
                 "invalid_response",
                 502,
             )

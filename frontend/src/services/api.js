@@ -19,7 +19,7 @@ async function request(path, init) {
       },
     })
   } catch {
-    throw new ApiError("The API could not be reached. Start the Flask backend on port 5000.", 0)
+    throw new ApiError("The clinical server could not be reached. Please verify backend connectivity.", 0)
   }
 
   const body = await response.json().catch(() => null)

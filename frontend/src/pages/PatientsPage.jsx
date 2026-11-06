@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react"
+import { Search, ChevronLeft, ChevronRight, UserPlus, Filter } from "lucide-react"
+import { Link } from "react-router-dom"
 import { PatientDetail } from "../components/PatientDetail"
 import { PatientForm } from "../components/PatientForm"
 import { PatientTable } from "../components/PatientTable"
@@ -22,7 +24,12 @@ export function PatientsPage() {
   async function load(nextPage = page, nextQuery = query, nextField = field) {
     setError("")
     try {
-      const response = await getPatients({ page: nextPage, perPage: 8, q: nextQuery.trim(), field: nextField })
+      const response = await getPatients({
+        page: nextPage,
+        perPage: 8,
+        q: nextQuery.trim(),
+        field: nextField,
+      })
       setResult(response.data)
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Patients could not be loaded.")
@@ -40,7 +47,7 @@ export function PatientsPage() {
     if (!editing) return
     try {
       const response = await updatePatient(editing.id, toPayload(values))
-      notify("success", response.message || "Patient updated.")
+      notify("success", response.message || "Patient record updated successfully.")
       setEditing(null)
       await load()
     } catch (err) {
@@ -53,7 +60,7 @@ export function PatientsPage() {
     setBusyDelete(true)
     try {
       const response = await deletePatient(deleting.id)
-      notify("success", response.message || "Patient deleted.")
+      notify("success", response.message || "Patient deleted successfully.")
       setDeleting(null)
       await load()
     } catch (err) {
@@ -64,32 +71,52 @@ export function PatientsPage() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-sky-100 sm:flex-row">
-        <input
-          value={query}
-          onChange={(event) => {
-            setPage(1)
-            setQuery(event.target.value)
-          }}
-          placeholder="Search by name or email"
-          className="flex-1 rounded-xl border border-sky-100 px-3 py-2.5 text-sm outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100"
-        />
-        <select
-          value={field}
-          onChange={(event) => {
-            setPage(1)
-            setField(event.target.value)
-          }}
-          className="rounded-xl border border-sky-100 bg-white px-3 py-2.5 text-sm font-semibold outline-none focus:border-sky-500"
-        >
-          <option value="all">Name and email</option>
-          <option value="name">Name only</option>
-          <option value="email">Email only</option>
-        </select>
+    <div className="space-y-5">
+      {/* Search & Actions Bar */}
+      <div className="flex flex-col gap-3.5 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-sky-100 transition-colors dark:bg-[#111827] dark:ring-slate-800 sm:flex-row sm:items-center">
+        <div className="relative flex-1">
+          <Search className="pointer-events-none absolute left-3.5 top-3.5 size-4 text-slate-400" />
+          <input
+            value={query}
+            onChange={(event) => {
+              setPage(1)
+              setQuery(event.target.value)
+            }}
+            placeholder="Search patients by full name or email address..."
+            className="w-full rounded-xl border border-sky-100 bg-white py-2.5 pl-10 pr-4 text-base font-medium outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-700 dark:bg-[#111827] dark:text-white dark:focus:ring-sky-900/40"
+          />
+        </div>
+
+        <div className="flex items-center gap-2.5">
+          <div className="relative">
+            <select
+              value={field}
+              onChange={(event) => {
+                setPage(1)
+                setField(event.target.value)
+              }}
+              className="appearance-none rounded-xl border border-sky-100 bg-white py-2.5 pl-3.5 pr-8 text-sm font-bold text-slate-700 outline-none transition focus:border-sky-500 dark:border-slate-700 dark:bg-[#111827] dark:text-slate-200"
+            >
+              <option value="all">Search: All Fields</option>
+              <option value="name">Search: Name Only</option>
+              <option value="email">Search: Email Only</option>
+            </select>
+            <Filter className="pointer-events-none absolute right-2.5 top-3 size-4 text-slate-400" />
+          </div>
+
+          <Link
+            to="/patients/new"
+            className="inline-flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-600"
+          >
+            <UserPlus className="size-4" />
+            <span className="hidden sm:inline">Add Patient</span>
+          </Link>
+        </div>
       </div>
 
-      {error ? <p className="text-sm font-medium text-rose-700">{error}</p> : null}
+      {error ? <p className="text-sm font-medium text-rose-700 dark:text-rose-400">{error}</p> : null}
+
+      {/* Main Table */}
       <PatientTable
         patients={result?.items ?? []}
         onView={setViewing}
@@ -97,37 +124,64 @@ export function PatientsPage() {
         onDelete={setDeleting}
       />
 
-      {result ? (
-        <div className="flex items-center justify-between text-sm">
-          <p className="text-slate-500">{result.total} stored record{result.total === 1 ? "" : "s"}</p>
+      {/* Pagination */}
+      {result && result.total > 0 ? (
+        <div className="flex flex-col items-center justify-between gap-3 text-sm sm:flex-row">
+          <p className="font-medium text-slate-500 dark:text-slate-400">
+            Showing <span className="font-bold text-[#0f2744] dark:text-white">{result.items.length}</span> of{" "}
+            <span className="font-bold text-[#0f2744] dark:text-white">{result.total}</span> registered patients
+          </p>
           <div className="flex items-center gap-2">
-            <button type="button" disabled={page <= 1} onClick={() => setPage((current) => current - 1)} className="rounded-xl bg-white px-3 py-2 font-semibold text-sky-800 ring-1 ring-sky-100 disabled:opacity-40">
-              Previous
+            <button
+              type="button"
+              disabled={page <= 1}
+              onClick={() => setPage((current) => current - 1)}
+              className="flex items-center gap-1 rounded-xl bg-white px-3.5 py-2 font-bold text-sky-800 shadow-sm ring-1 ring-sky-100 transition hover:bg-sky-50 disabled:opacity-40 dark:bg-[#111827] dark:text-sky-300 dark:ring-slate-800 dark:hover:bg-slate-800"
+            >
+              <ChevronLeft className="size-4" /> Previous
             </button>
-            <span className="font-semibold">Page {result.page} of {result.pages}</span>
-            <button type="button" disabled={page >= result.pages} onClick={() => setPage((current) => current + 1)} className="rounded-xl bg-white px-3 py-2 font-semibold text-sky-800 ring-1 ring-sky-100 disabled:opacity-40">
-              Next
+            <span className="px-2 font-bold text-slate-600 dark:text-slate-300">
+              Page {result.page} of {result.pages}
+            </span>
+            <button
+              type="button"
+              disabled={page >= result.pages}
+              onClick={() => setPage((current) => current + 1)}
+              className="flex items-center gap-1 rounded-xl bg-white px-3.5 py-2 font-bold text-sky-800 shadow-sm ring-1 ring-sky-100 transition hover:bg-sky-50 disabled:opacity-40 dark:bg-[#111827] dark:text-sky-300 dark:ring-slate-800 dark:hover:bg-slate-800"
+            >
+              Next <ChevronRight className="size-4" />
             </button>
           </div>
         </div>
       ) : null}
 
+      {/* View Detail Modal */}
       {viewing ? (
-        <Modal title={viewing.full_name} onClose={() => setViewing(null)}>
+        <Modal title={`Patient Profile: ${viewing.full_name}`} onClose={() => setViewing(null)}>
           <PatientDetail patient={viewing} />
         </Modal>
       ) : null}
+
+      {/* Edit Modal */}
       {editing ? (
-        <Modal title={`Edit ${editing.full_name}`} onClose={() => setEditing(null)}>
-          <PatientForm initial={formFromPatient(editing)} submitLabel="Save changes" onSubmit={saveEdit} />
-          <p className="mt-3 text-xs text-slate-500">Changing a blood test value asks Gemini for a new remark. An email-only change keeps the existing remark.</p>
+        <Modal title={`Edit Patient Details — ${editing.full_name}`} onClose={() => setEditing(null)}>
+          <PatientForm
+            initial={formFromPatient(editing)}
+            submitLabel="Save Changes"
+            onSubmit={saveEdit}
+          />
+          <p className="mt-4 rounded-xl bg-sky-50 p-3 text-xs leading-relaxed text-sky-800 dark:bg-slate-800/60 dark:text-sky-300">
+            Note: Modifying blood test parameters automatically updates clinical observations. Updating contact information preserves prior clinical notes.
+          </p>
         </Modal>
       ) : null}
+
+      {/* Delete Confirmation Modal */}
       {deleting ? (
         <ConfirmDialog
-          title="Delete patient"
-          message={`Delete ${deleting.full_name} (ID ${deleting.id}) from SQLite? This cannot be undone.`}
-          confirmLabel="Delete record"
+          title="Confirm Patient Record Deletion"
+          message={`Are you sure you want to permanently delete ${deleting.full_name} (Record ID #${deleting.id})? This clinical record will be removed.`}
+          confirmLabel="Delete Record"
           busy={busyDelete}
           onConfirm={confirmDelete}
           onClose={() => setDeleting(null)}

@@ -1,9 +1,4 @@
-"""Database connection.
 
-SQLAlchemy is the only layer that talks to SQLite or PostgreSQL.
-Queries use the ORM, so values are sent as parameters rather than
-being pasted into SQL strings.
-"""
 
 from __future__ import annotations
 

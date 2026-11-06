@@ -13,11 +13,11 @@ export function AddPatientPage() {
   async function handleSubmit(values) {
     try {
       const response = await createPatient(toPayload(values))
-      notify("success", response.message || "Patient saved.")
+      notify("success", response.message || "Patient successfully registered.")
       setFormKey((current) => current + 1)
       navigate("/patients")
     } catch (err) {
-      const message = err instanceof ApiError ? err.message : "The patient could not be saved."
+      const message = err instanceof ApiError ? err.message : "The patient record could not be saved."
       const details = err instanceof ApiError && err.errors ? Object.values(err.errors).join(" ") : ""
       notify("error", details ? `${message} ${details}` : message)
     }
@@ -26,10 +26,14 @@ export function AddPatientPage() {
   return (
     <div className="mx-auto max-w-3xl">
       <PageCard
-        title="Register a patient"
-        subtitle="Every field is required. Invalid dates, emails, and negative lab values are rejected by the browser and again by Flask."
+        title="Patient Registration & Laboratory Intake"
+        subtitle="Complete the clinical intake form below. All physiological metrics undergo immediate validation and clinical health analysis."
       >
-        <PatientForm key={formKey} submitLabel="Save and request AI remarks" onSubmit={handleSubmit} />
+        <PatientForm
+          key={formKey}
+          submitLabel="Register Patient & Generate Analysis"
+          onSubmit={handleSubmit}
+        />
       </PageCard>
     </div>
   )

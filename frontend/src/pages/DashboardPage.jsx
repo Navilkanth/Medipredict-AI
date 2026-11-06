@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Activity, Droplets, Sparkles, Users } from "lucide-react"
+import { Activity, Droplets, Sparkles, Users, ArrowUpRight } from "lucide-react"
 import { Link } from "react-router-dom"
 import { DistributionChart } from "../components/DistributionChart"
 import { ErrorState, LoadingState, PageCard, StatCard, StatusBadge } from "../components/ui"
@@ -25,7 +25,7 @@ export function DashboardPage() {
   }, [])
 
   if (error) return <ErrorState message={error} />
-  if (!stats) return <LoadingState label="Calculating dashboard totals from SQLite..." />
+  if (!stats) return <LoadingState label="Synchronizing clinical health records..." />
 
   const registration = stats.registration_by_day.map((row) => ({
     label: row.date.slice(5),
@@ -34,44 +34,99 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Total patients" value={stats.total_patients} hint="Rows currently stored in SQLite." icon={<Users className="size-5" />} />
-        <StatCard label="Valid patient records" value={stats.valid_records} hint="Only records that passed validation are stored." icon={<Activity className="size-5" />} />
-        <StatCard label="Pending AI analysis" value={stats.pending_ai} hint="Saved patients without a completed Gemini remark." icon={<Sparkles className="size-5" />} />
+      {/* 4 Summary Cards */}
+      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
-          label="High glucose observations"
+          label="Total Patients"
+          value={stats.total_patients}
+          hint="Active registered patients"
+          icon={<Users className="size-6" />}
+        />
+        <StatCard
+          label="Verified Lab Records"
+          value={stats.valid_records}
+          hint="Fully validated clinical profiles"
+          icon={<Activity className="size-6" />}
+        />
+        <StatCard
+          label="Pending Analysis"
+          value={stats.pending_ai}
+          hint="Awaiting clinical review"
+          icon={<Sparkles className="size-6" />}
+        />
+        <StatCard
+          label="High Glucose Alerts"
           value={stats.high_glucose}
-          hint={`Glucose at or above ${stats.high_glucose_threshold} mg/dL.`}
-          icon={<Droplets className="size-5" />}
+          hint={`Threshold: ≥ ${stats.high_glucose_threshold} mg/dL`}
+          icon={<Droplets className="size-6 text-rose-500" />}
         />
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-3">
-        <DistributionChart title="Glucose distribution" subtitle="Stored patients grouped by common adult bands." data={stats.blood_tests.glucose_distribution} color="#0284c7" />
-        <DistributionChart title="Cholesterol distribution" subtitle="Stored patients grouped by common adult bands." data={stats.blood_tests.cholesterol_distribution} color="#0369a1" />
-        <DistributionChart title="Registrations" subtitle="Patients created, grouped by day." data={registration} color="#0ea5e9" />
+      {/* Distribution Charts */}
+      <div className="grid gap-5 xl:grid-cols-3">
+        <DistributionChart
+          title="Glucose Distribution"
+          subtitle="Adult fasting glucose categories"
+          data={stats.blood_tests.glucose_distribution}
+          color="#0284c7"
+        />
+        <DistributionChart
+          title="Cholesterol Distribution"
+          subtitle="Cardiovascular risk categories"
+          data={stats.blood_tests.cholesterol_distribution}
+          color="#0369a1"
+        />
+        <DistributionChart
+          title="Patient Registrations"
+          subtitle="Clinical registrations over time"
+          data={registration}
+          color="#0ea5e9"
+        />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <PageCard title="Blood test averages" subtitle="Calculated from every stored record.">
-          <div className="grid gap-3 sm:grid-cols-3">
-            <Average label="Glucose" value={stats.blood_tests.average_glucose} unit="mg/dL" />
-            <Average label="Haemoglobin" value={stats.blood_tests.average_haemoglobin} unit="g/dL" />
-            <Average label="Cholesterol" value={stats.blood_tests.average_cholesterol} unit="mg/dL" />
+      {/* Averages & Recent Remarks */}
+      <div className="grid gap-5 lg:grid-cols-2">
+        <PageCard
+          title="Blood Biomarker Averages"
+          subtitle="Mean physiological values across current population."
+        >
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Average label="Avg Glucose" value={stats.blood_tests.average_glucose} unit="mg/dL" />
+            <Average label="Avg Haemoglobin" value={stats.blood_tests.average_haemoglobin} unit="g/dL" />
+            <Average label="Avg Cholesterol" value={stats.blood_tests.average_cholesterol} unit="mg/dL" />
           </div>
         </PageCard>
-        <PageCard title="Recent AI remarks" subtitle="Latest completed Gemini observations." action={<Link className="text-sm font-bold text-sky-700" to="/analysis">Open analysis</Link>}>
+
+        <PageCard
+          title="Recent Clinical Health Remarks"
+          subtitle="Latest automated biomarker observations."
+          action={
+            <Link
+              className="inline-flex items-center gap-1 text-sm font-bold text-sky-700 hover:text-sky-800 dark:text-sky-400 dark:hover:text-sky-300"
+              to="/analysis"
+            >
+              Full Analysis <ArrowUpRight className="size-4" />
+            </Link>
+          }
+        >
           {stats.recent_remarks.length === 0 ? (
-            <p className="text-sm text-slate-500">No completed remarks yet. Add a patient or retry analysis.</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              No clinical remarks recorded yet. Register patients to generate analysis.
+            </p>
           ) : (
             <ul className="space-y-3">
               {stats.recent_remarks.map((item) => (
-                <li key={item.id} className="rounded-xl bg-sky-50/70 px-3 py-2">
+                <li
+                  key={item.id}
+                  className="rounded-xl border border-sky-100/70 bg-sky-50/60 p-3.5 transition hover:bg-sky-50 dark:border-slate-800 dark:bg-slate-800/40 dark:hover:bg-slate-800/70"
+                >
                   <div className="flex items-center justify-between gap-3">
-                    <p className="font-bold text-ink">{item.full_name}</p>
-                    <span className="text-xs text-slate-500">{formatWhen(item.updated_at)}</span>
+                    <p className="font-bold text-[#0f2744] dark:text-white">{item.full_name}</p>
+                    <span className="text-xs font-medium text-slate-400 dark:text-slate-500">
+                      {formatWhen(item.updated_at)}
+                    </span>
                   </div>
-                  <p className="mt-1 line-clamp-2 text-sm text-slate-600">{item.remarks}</p>
+                  <p className="mt-1 line-clamp-2 text-sm text-slate-600 dark:text-slate-300">{item.remarks}</p>
                 </li>
               ))}
             </ul>
@@ -79,30 +134,44 @@ export function DashboardPage() {
         </PageCard>
       </div>
 
-      <PageCard title="Recent patient records" subtitle="Newest stored rows." action={<Link className="text-sm font-bold text-sky-700" to="/patients">Manage patients</Link>}>
+      {/* Recent Patients Table */}
+      <PageCard
+        title="Recent Patient Records"
+        subtitle="Newly registered clinical profiles."
+        action={
+          <Link
+            className="inline-flex items-center gap-1 text-sm font-bold text-sky-700 hover:text-sky-800 dark:text-sky-400 dark:hover:text-sky-300"
+            to="/patients"
+          >
+            All Patients <ArrowUpRight className="size-4" />
+          </Link>
+        }
+      >
         <div className="overflow-x-auto">
           <table className="min-w-[720px] w-full text-left text-sm">
-            <thead className="text-xs tracking-wide text-sky-900 uppercase">
+            <thead className="bg-sky-50/70 text-xs font-bold tracking-wider text-sky-950 uppercase dark:bg-slate-800/70 dark:text-sky-300">
               <tr>
-                {["Name", "Email", "Glucose", "Haemoglobin", "Cholesterol", "AI"].map((heading) => (
-                  <th key={heading} className="px-2 py-2 font-bold">{heading}</th>
+                {["Patient Name", "Email", "Glucose", "Haemoglobin", "Cholesterol", "Status"].map((heading) => (
+                  <th key={heading} className="px-3.5 py-3 font-bold">{heading}</th>
                 ))}
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-sky-50 dark:divide-slate-800/60">
               {stats.recent_patients.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-2 py-6 text-slate-500">No patients stored yet.</td>
+                  <td colSpan={6} className="px-3.5 py-6 text-slate-500 dark:text-slate-400">
+                    No patient records currently stored.
+                  </td>
                 </tr>
               ) : (
                 stats.recent_patients.map((patient) => (
-                  <tr key={patient.id} className="border-t border-sky-50">
-                    <td className="px-2 py-2 font-semibold">{patient.full_name}</td>
-                    <td className="px-2 py-2">{patient.email}</td>
-                    <td className="px-2 py-2">{formatLab(patient.glucose)}</td>
-                    <td className="px-2 py-2">{formatLab(patient.haemoglobin)}</td>
-                    <td className="px-2 py-2">{formatLab(patient.cholesterol)}</td>
-                    <td className="px-2 py-2"><StatusBadge status={patient.analysis_status} /></td>
+                  <tr key={patient.id} className="transition hover:bg-sky-50/30 dark:hover:bg-slate-800/30">
+                    <td className="px-3.5 py-3 font-bold text-[#0f2744] dark:text-white">{patient.full_name}</td>
+                    <td className="px-3.5 py-3 font-medium text-slate-600 dark:text-slate-300">{patient.email}</td>
+                    <td className="px-3.5 py-3 font-semibold text-sky-900 dark:text-sky-200">{formatLab(patient.glucose)} mg/dL</td>
+                    <td className="px-3.5 py-3 font-semibold text-sky-900 dark:text-sky-200">{formatLab(patient.haemoglobin)} g/dL</td>
+                    <td className="px-3.5 py-3 font-semibold text-sky-900 dark:text-sky-200">{formatLab(patient.cholesterol)} mg/dL</td>
+                    <td className="px-3.5 py-3"><StatusBadge status={patient.analysis_status} /></td>
                   </tr>
                 ))
               )}
@@ -116,10 +185,10 @@ export function DashboardPage() {
 
 function Average({ label, value, unit }) {
   return (
-    <div className="rounded-xl bg-sky-50 px-3 py-3">
-      <p className="text-xs font-bold tracking-wide text-sky-800 uppercase">{label}</p>
-      <p className="mt-1 text-2xl font-bold text-ink">{value ?? "—"}</p>
-      <p className="text-xs text-slate-500">{unit}</p>
+    <div className="rounded-2xl border border-sky-100 bg-sky-50/70 p-4 transition dark:border-slate-800 dark:bg-slate-800/50">
+      <p className="text-xs font-bold tracking-wider text-sky-800 uppercase dark:text-sky-300">{label}</p>
+      <p className="mt-1 text-2xl font-extrabold text-[#0f2744] dark:text-white">{value ?? "—"}</p>
+      <p className="text-xs text-slate-500 dark:text-slate-400">{unit}</p>
     </div>
   )
 }

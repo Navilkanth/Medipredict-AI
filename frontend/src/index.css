@@ -1,11 +1,29 @@
 @import "tailwindcss";
 
+@variant dark (&:where(.dark, .dark *));
+
 @theme {
-  --font-sans: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Manrope", "Source Sans 3", ui-sans-serif, sans-serif;
+  --font-sans: "Source Sans 3", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Manrope", "Source Sans 3", system-ui, sans-serif;
   --color-ink: #0f2744;
-  --color-mist: #f3f8fb;
-  --color-line: #d7e7f3;
+  --color-mist: #f4f8fb;
+  --color-line: #d8e5f0;
+}
+
+html {
+  font-size: 16px; /* Enhanced baseline font size for readability */
+}
+
+html.text-size-standard {
+  font-size: 16px;
+}
+
+html.text-size-medium {
+  font-size: 17.5px;
+}
+
+html.text-size-large {
+  font-size: 19px;
 }
 
 html,
@@ -16,9 +34,16 @@ body,
 
 body {
   margin: 0;
-  background: var(--color-mist);
-  color: var(--color-ink);
+  background: #f4f8fb;
+  color: #0f2744;
   font-family: var(--font-sans);
+  line-height: 1.5;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+html.dark body {
+  background: #090e1a;
+  color: #f1f5f9;
 }
 
 h1,
@@ -26,6 +51,7 @@ h2,
 h3,
 .font-display {
   font-family: var(--font-display);
+  letter-spacing: -0.02em;
 }
 
 button,
@@ -37,4 +63,29 @@ textarea {
 
 ::selection {
   background: #bae6fd;
+  color: #0369a1;
+}
+
+html.dark ::selection {
+  background: #0284c7;
+  color: #ffffff;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+html.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Activity, AlertCircle, CheckCircle2, FlaskConical, RefreshCw, Sparkles, User } from "lucide-react"
+import { Activity, AlertCircle, CheckCircle2, FlaskConical, RefreshCw, Sparkles, User, Stethoscope } from "lucide-react"
 import { PatientDetail } from "../components/PatientDetail"
 import { ErrorState, LoadingState, PageCard, StatusBadge } from "../components/ui"
 import { useToast } from "../context/ToastContext"
@@ -39,10 +39,10 @@ export function AnalysisPage() {
     setBusy(true)
     try {
       const response = await reanalyzePatient(selected.id)
-      notify("success", response.message || "AI remarks generated.")
+      notify("success", response.message || "Clinical remarks updated.")
       await load()
     } catch (err) {
-      notify("error", err instanceof ApiError ? err.message : "Gemini could not complete the analysis.")
+      notify("error", err instanceof ApiError ? err.message : "Clinical analysis could not be refreshed.")
       await load()
     } finally {
       setBusy(false)
@@ -71,52 +71,52 @@ export function AnalysisPage() {
         cholesterol: c,
       })
       setSimResult(response.data)
-      notify("success", "AI observations generated successfully.")
+      notify("success", "Clinical observations generated successfully.")
     } catch (err) {
-      notify("error", err instanceof ApiError ? err.message : "AI analysis request failed.")
+      notify("error", err instanceof ApiError ? err.message : "Analysis request could not be completed.")
     } finally {
       setSimBusy(false)
     }
   }
 
   if (error) return <ErrorState message={error} />
-  if (loading) return <LoadingState label="Loading stored analyses..." />
+  if (loading) return <LoadingState label="Loading clinical health analyses..." />
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* Tab Switcher */}
-      <div className="flex border-b border-sky-100 bg-white px-4 py-2 rounded-2xl shadow-sm ring-1 ring-sky-100">
+      <div className="flex border-b border-sky-100 bg-white p-2 rounded-2xl shadow-sm ring-1 ring-sky-100 transition-colors dark:border-slate-800 dark:bg-[#111827] dark:ring-slate-800">
         <button
           type="button"
           onClick={() => setActiveTab("records")}
-          className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold transition ${
+          className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition ${
             activeTab === "records"
-              ? "bg-sky-600 text-white shadow-sm"
-              : "text-slate-600 hover:bg-sky-50"
+              ? "bg-sky-600 text-white shadow-sm dark:bg-sky-500"
+              : "text-slate-600 hover:bg-sky-50 dark:text-slate-300 dark:hover:bg-slate-800"
           }`}
         >
           <User className="size-4" />
-          Patient Records Analysis
+          Patient Registry Analysis
         </button>
         <button
           type="button"
           onClick={() => setActiveTab("simulator")}
-          className={`ml-2 flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold transition ${
+          className={`ml-2 flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition ${
             activeTab === "simulator"
-              ? "bg-sky-600 text-white shadow-sm"
-              : "text-slate-600 hover:bg-sky-50"
+              ? "bg-sky-600 text-white shadow-sm dark:bg-sky-500"
+              : "text-slate-600 hover:bg-sky-50 dark:text-slate-300 dark:hover:bg-slate-800"
           }`}
         >
           <FlaskConical className="size-4" />
-          Direct Lab Test Evaluator (Gemini AI API)
+          Interactive Lab Test Evaluator
         </button>
       </div>
 
       {activeTab === "records" ? (
-        <div className="grid gap-4 lg:grid-cols-[280px_1fr]">
-          <PageCard title="Patients" subtitle="Select a stored record.">
+        <div className="grid gap-5 lg:grid-cols-[300px_1fr]">
+          <PageCard title="Patients" subtitle="Select a patient to inspect observations.">
             {patients.length === 0 ? (
-              <p className="text-sm text-slate-500">No patients yet.</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">No patients registered yet.</p>
             ) : (
               <ul className="space-y-2">
                 {patients.map((patient) => (
@@ -124,29 +124,35 @@ export function AnalysisPage() {
                     <button
                       type="button"
                       onClick={() => setSelectedId(patient.id)}
-                      className={`w-full rounded-xl px-3 py-2 text-left transition ${
+                      className={`w-full rounded-2xl p-3 text-left transition ${
                         patient.id === selectedId
-                          ? "bg-sky-600 text-white"
-                          : "bg-sky-50 text-ink hover:bg-sky-100"
+                          ? "bg-sky-600 text-white shadow-sm dark:bg-sky-500"
+                          : "bg-sky-50/70 text-[#0f2744] hover:bg-sky-100 dark:bg-slate-800/60 dark:text-slate-200 dark:hover:bg-slate-800"
                       }`}
                     >
-                      <span className="block text-sm font-bold">{patient.full_name}</span>
-                      <div className="mt-0.5 flex items-center justify-between">
-                        <span className={`text-xs ${patient.id === selectedId ? "text-sky-100" : "text-slate-500"}`}>
-                          ID #{patient.id}
+                      <span className="block text-base font-bold">{patient.full_name}</span>
+                      <div className="mt-1 flex items-center justify-between">
+                        <span
+                          className={`text-xs ${
+                            patient.id === selectedId
+                              ? "text-sky-100"
+                              : "text-slate-500 dark:text-slate-400"
+                          }`}
+                        >
+                          Record #{patient.id}
                         </span>
                         <span
-                          className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                          className={`text-xs font-bold px-2 py-0.5 rounded-full ${
                             patient.analysis_status === "completed"
                               ? patient.id === selectedId
                                 ? "bg-sky-700 text-white"
-                                : "bg-emerald-100 text-emerald-800"
+                                : "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
                               : patient.id === selectedId
                               ? "bg-sky-700 text-white"
-                              : "bg-amber-100 text-amber-800"
+                              : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
                           }`}
                         >
-                          {patient.analysis_status}
+                          {patient.analysis_status === "completed" ? "Analyzed" : "Pending"}
                         </span>
                       </div>
                     </button>
@@ -157,42 +163,44 @@ export function AnalysisPage() {
           </PageCard>
 
           <PageCard
-            title={selected ? selected.full_name : "AI details"}
-            subtitle="Glucose, haemoglobin, cholesterol, overall remarks, and recommendations."
+            title={selected ? selected.full_name : "Clinical Assessment Details"}
+            subtitle="Parameter observations, physiological implications, and clinical recommendations."
             action={
               selected ? (
                 <button
                   type="button"
                   onClick={retry}
                   disabled={busy}
-                  className="flex items-center gap-1.5 rounded-xl bg-sky-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-sky-700 disabled:opacity-60"
+                  className="flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-sky-700 disabled:opacity-60 dark:bg-sky-500 dark:hover:bg-sky-600"
                 >
                   <RefreshCw className={`size-4 ${busy ? "animate-spin" : ""}`} />
-                  {busy ? "Asking Gemini..." : "Reanalyze with Gemini"}
+                  {busy ? "Analyzing..." : "Re-evaluate Biomarkers"}
                 </button>
               ) : null
             }
           >
             {selected ? (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <StatusBadge status={selected.analysis_status} />
                 <PatientDetail patient={selected} />
               </div>
             ) : (
-              <p className="text-sm text-slate-500">Choose a patient to read their parameter observations.</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Choose a patient from the list to inspect their clinical breakdown.
+              </p>
             )}
           </PageCard>
         </div>
       ) : (
         <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
           <PageCard
-            title="Lab Test Evaluator"
-            subtitle="Test arbitrary blood test values directly through POST /api/health/analyze with Google Gemini."
+            title="Biomarker Evaluator"
+            subtitle="Input laboratory values to simulate instant clinical health observations."
           >
             <form onSubmit={handleSimulate} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-sky-900 uppercase">
-                  Glucose (mg/dL)
+                <label className="block text-xs font-bold uppercase tracking-wide text-sky-950 dark:text-sky-300">
+                  Fasting Glucose (mg/dL)
                 </label>
                 <input
                   type="number"
@@ -200,14 +208,16 @@ export function AnalysisPage() {
                   value={simValues.glucose}
                   onChange={(e) => setSimValues({ ...simValues, glucose: e.target.value })}
                   placeholder="e.g. 100"
-                  className="mt-1 w-full rounded-xl border border-sky-100 px-3 py-2.5 text-sm font-semibold outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100"
+                  className="mt-1.5 w-full rounded-xl border border-sky-100 bg-white px-3.5 py-2.5 text-base font-bold outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-700 dark:bg-[#111827] dark:text-white"
                 />
-                {simErrors.glucose && <p className="mt-1 text-xs text-rose-600">{simErrors.glucose}</p>}
-                <p className="mt-1 text-xs text-slate-400">Normal fasting range: 70–99 mg/dL</p>
+                {simErrors.glucose && (
+                  <p className="mt-1 text-xs text-rose-600">{simErrors.glucose}</p>
+                )}
+                <p className="mt-1 text-xs text-slate-400">Standard fasting range: 70–99 mg/dL</p>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-sky-900 uppercase">
+                <label className="block text-xs font-bold uppercase tracking-wide text-sky-950 dark:text-sky-300">
                   Haemoglobin (g/dL)
                 </label>
                 <input
@@ -216,15 +226,17 @@ export function AnalysisPage() {
                   value={simValues.haemoglobin}
                   onChange={(e) => setSimValues({ ...simValues, haemoglobin: e.target.value })}
                   placeholder="e.g. 14.5"
-                  className="mt-1 w-full rounded-xl border border-sky-100 px-3 py-2.5 text-sm font-semibold outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100"
+                  className="mt-1.5 w-full rounded-xl border border-sky-100 bg-white px-3.5 py-2.5 text-base font-bold outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-700 dark:bg-[#111827] dark:text-white"
                 />
-                {simErrors.haemoglobin && <p className="mt-1 text-xs text-rose-600">{simErrors.haemoglobin}</p>}
+                {simErrors.haemoglobin && (
+                  <p className="mt-1 text-xs text-rose-600">{simErrors.haemoglobin}</p>
+                )}
                 <p className="mt-1 text-xs text-slate-400">Standard range: 12.0–17.5 g/dL</p>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-sky-900 uppercase">
-                  Cholesterol (mg/dL)
+                <label className="block text-xs font-bold uppercase tracking-wide text-sky-950 dark:text-sky-300">
+                  Total Cholesterol (mg/dL)
                 </label>
                 <input
                   type="number"
@@ -232,73 +244,85 @@ export function AnalysisPage() {
                   value={simValues.cholesterol}
                   onChange={(e) => setSimValues({ ...simValues, cholesterol: e.target.value })}
                   placeholder="e.g. 185"
-                  className="mt-1 w-full rounded-xl border border-sky-100 px-3 py-2.5 text-sm font-semibold outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100"
+                  className="mt-1.5 w-full rounded-xl border border-sky-100 bg-white px-3.5 py-2.5 text-base font-bold outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:border-slate-700 dark:bg-[#111827] dark:text-white"
                 />
-                {simErrors.cholesterol && <p className="mt-1 text-xs text-rose-600">{simErrors.cholesterol}</p>}
+                {simErrors.cholesterol && (
+                  <p className="mt-1 text-xs text-rose-600">{simErrors.cholesterol}</p>
+                )}
                 <p className="mt-1 text-xs text-slate-400">Desirable range: &lt; 200 mg/dL</p>
               </div>
 
               <button
                 type="submit"
                 disabled={simBusy}
-                className="w-full flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-sky-700 disabled:opacity-60"
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-3 text-base font-bold text-white shadow-md shadow-sky-600/20 transition hover:bg-sky-700 disabled:opacity-60 dark:bg-sky-500 dark:hover:bg-sky-600"
               >
-                <Sparkles className="size-4" />
-                {simBusy ? "Consulting Gemini AI..." : "Generate AI Observations"}
+                <Stethoscope className="size-4" />
+                {simBusy ? "Evaluating Biomarkers..." : "Run Clinical Health Analysis"}
               </button>
             </form>
           </PageCard>
 
           <PageCard
-            title="AI Health Observations & Remarks"
-            subtitle="Real-time structured response returned by Google GenAI SDK."
+            title="Biomarker Clinical Analysis"
+            subtitle="Automated physiological evaluation and structured observations."
           >
             {simResult ? (
               <div className="space-y-4">
                 <div className="grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-xl border border-sky-100 bg-sky-50/50 p-4">
-                    <p className="text-xs font-bold text-sky-800 uppercase">Glucose Observation</p>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-700">{simResult.glucose_observation}</p>
+                  <div className="rounded-2xl border border-sky-100 bg-sky-50/60 p-4 dark:border-slate-800 dark:bg-slate-800/40">
+                    <p className="text-xs font-bold text-sky-800 uppercase dark:text-sky-300">Glucose Observation</p>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                      {simResult.glucose_observation}
+                    </p>
                   </div>
-                  <div className="rounded-xl border border-sky-100 bg-sky-50/50 p-4">
-                    <p className="text-xs font-bold text-sky-800 uppercase">Haemoglobin Observation</p>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-700">{simResult.haemoglobin_observation}</p>
+                  <div className="rounded-2xl border border-sky-100 bg-sky-50/60 p-4 dark:border-slate-800 dark:bg-slate-800/40">
+                    <p className="text-xs font-bold text-sky-800 uppercase dark:text-sky-300">Haemoglobin Observation</p>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                      {simResult.haemoglobin_observation}
+                    </p>
                   </div>
-                  <div className="rounded-xl border border-sky-100 bg-sky-50/50 p-4">
-                    <p className="text-xs font-bold text-sky-800 uppercase">Cholesterol Observation</p>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-700">{simResult.cholesterol_observation}</p>
+                  <div className="rounded-2xl border border-sky-100 bg-sky-50/60 p-4 dark:border-slate-800 dark:bg-slate-800/40">
+                    <p className="text-xs font-bold text-sky-800 uppercase dark:text-sky-300">Cholesterol Observation</p>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                      {simResult.cholesterol_observation}
+                    </p>
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-sky-200 bg-white p-4 shadow-sm">
-                  <div className="flex items-center gap-2 font-bold text-sky-950">
-                    <Activity className="size-4 text-sky-600" />
+                <div className="rounded-2xl border border-sky-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-800/60">
+                  <div className="flex items-center gap-2 font-bold text-[#0f2744] dark:text-white">
+                    <Activity className="size-4 text-sky-600 dark:text-sky-400" />
                     Overall Health Remarks
                   </div>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-700">{simResult.overall_remarks}</p>
+                  <p className="mt-2 text-base leading-relaxed text-slate-700 dark:text-slate-300">
+                    {simResult.overall_remarks}
+                  </p>
                 </div>
 
-                <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-4">
-                  <div className="flex items-center gap-2 font-bold text-emerald-950">
-                    <CheckCircle2 className="size-4 text-emerald-600" />
+                <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-5 dark:border-emerald-900/60 dark:bg-emerald-950/30">
+                  <div className="flex items-center gap-2 font-bold text-emerald-950 dark:text-emerald-200">
+                    <CheckCircle2 className="size-4 text-emerald-600 dark:text-emerald-400" />
                     Clinical Recommendations
                   </div>
-                  <p className="mt-2 text-sm leading-relaxed text-emerald-900">{simResult.recommendations}</p>
+                  <p className="mt-2 text-base leading-relaxed text-emerald-900 dark:text-emerald-300">
+                    {simResult.recommendations}
+                  </p>
                 </div>
 
-                <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-3 text-xs text-amber-900 flex items-start gap-2">
-                  <AlertCircle className="size-4 text-amber-600 shrink-0 mt-0.5" />
+                <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-4 text-xs text-amber-900 flex items-start gap-2.5 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-200">
+                  <AlertCircle className="size-4 text-amber-600 shrink-0 mt-0.5 dark:text-amber-400" />
                   <span>
-                    <strong>Clinical Notice:</strong> Observations are preliminary and do not constitute a definitive medical diagnosis. Units were assumed based on standard laboratory ranges. Consult a registered physician for clinical evaluation.
+                    <strong>Clinical Notice:</strong> Observations are preliminary screening insights and do not constitute a definitive medical diagnosis. Units were assumed based on standard laboratory metrics. Consult a registered physician for clinical evaluation.
                   </span>
                 </div>
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-16 text-center text-slate-400">
-                <Sparkles className="size-10 text-sky-300 stroke-1 mb-2" />
-                <p className="font-semibold text-slate-600">No live evaluation performed yet</p>
+                <Sparkles className="size-10 text-sky-300 stroke-1 mb-2 dark:text-sky-500" />
+                <p className="font-semibold text-slate-600 dark:text-slate-300">No biomarker test executed yet</p>
                 <p className="text-xs text-slate-400 max-w-sm mt-1">
-                  Adjust the blood test parameters on the left and click "Generate AI Observations" to run a live evaluation via Google Gemini.
+                  Adjust the blood test parameters on the left and click "Run Clinical Health Analysis" to generate real-time observational screening.
                 </p>
               </div>
             )}

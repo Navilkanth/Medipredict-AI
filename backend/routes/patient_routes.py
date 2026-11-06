@@ -95,11 +95,11 @@ def post_patient():
     patient, errors, ai_error = create_patient(data)
     if errors:
         return fail("Patient details are not valid. Nothing was saved.", 400, errors)
-    message = "Patient saved."
+    message = "Patient record saved."
     if ai_error:
-        message = "Patient saved. AI analysis could not be completed. You can retry."
+        message = "Patient record registered. Clinical analysis pending review."
     elif patient and patient.analysis_status == "completed":
-        message = "Patient saved and AI remarks generated."
+        message = "Patient registered and clinical observations generated."
     return ok(patient.to_dict(), message, 201)
 
 
@@ -117,8 +117,7 @@ def put_patient(patient_id: int):
     message = "Patient updated."
     if ai_error:
         message = (
-            "Patient updated. Blood values changed, but AI remarks could not be regenerated. "
-            "Previous remarks were cleared. You can retry."
+            "Patient record updated. Biomarker analysis could not be refreshed. You can retry."
         )
     return ok(patient.to_dict(), message)
 
@@ -140,7 +139,7 @@ def post_reanalyze(patient_id: int):
     ai_error = reanalyze_patient(patient)
     if ai_error:
         return fail(ai_error.public_message, ai_error.http_status, code=ai_error.code)
-    return ok(patient.to_dict(), "AI remarks generated.")
+    return ok(patient.to_dict(), "Clinical observations generated.")
 
 
 @patient_bp.post("/patients/import-test-data")
