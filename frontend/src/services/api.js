@@ -80,6 +80,12 @@ export function getHealthStatus() {
   return request("/api/health/status")
 }
 
+export function seedDatabase(clearExisting = true) {
+  return request(`/api/seed?clear=${clearExisting ? "true" : "false"}`, {
+    method: "POST",
+  })
+}
+
 export function toPayload(values) {
   return {
     full_name: values.full_name.trim(),

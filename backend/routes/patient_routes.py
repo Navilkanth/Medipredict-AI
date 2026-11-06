@@ -139,3 +139,18 @@ def post_reanalyze(patient_id: int):
     if ai_error:
         return fail(ai_error.public_message, ai_error.http_status, code=ai_error.code)
     return ok(patient.to_dict(), "Clinical observations generated.")
+
+
+@patient_bp.route("/seed", methods=["GET", "POST"])
+def post_seed():
+    from services.patient_service import seed_patient_records
+
+    clear = request.args.get("clear", "true").lower() == "true"
+    created = seed_patient_records(clear_existing=clear)
+    return ok(
+        {
+            "total_seeded": len(created),
+            "patients": created,
+        },
+        f"Successfully seeded {len(created)} patient records with clinical AI observations.",
+    )

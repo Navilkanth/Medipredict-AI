@@ -122,3 +122,4 @@ def seed_database(clear_existing: bool = True):
 
 if __name__ == "__main__":
     seed_database(clear_existing=True)
+

@@ -123,3 +123,60 @@ def reanalyze_patient(patient: Patient) -> GeminiServiceError | None:
 def delete_patient(patient: Patient) -> None:
     db.session.delete(patient)
     db.session.commit()
+
+
+def seed_patient_records(clear_existing: bool = False) -> list[dict]:
+    from datetime import date
+    from utils.seed_data import SEED_PATIENTS
+
+    if clear_existing:
+        db.session.query(Patient).delete()
+        db.session.commit()
+
+    created_patients = []
+    for item in SEED_PATIENTS:
+        if "remarks" in item and item.get("remarks"):
+            dob_val = item["dob"]
+            if isinstance(dob_val, str):
+                if "-" in dob_val:
+                    parts = [int(p) for p in dob_val.split("-")]
+                    parsed_dob = date(parts[0], parts[1], parts[2])
+                else:
+                    parts = [int(p) for p in dob_val.split("/")]
+                    parsed_dob = date(parts[2], parts[1], parts[0])
+            else:
+                parsed_dob = dob_val
+
+            patient = Patient(
+                full_name=item["full_name"],
+                dob=parsed_dob,
+                email=item["email"],
+                glucose=float(item["glucose"]),
+                haemoglobin=float(item["haemoglobin"]),
+                cholesterol=float(item["cholesterol"]),
+                glucose_observation=item.get("glucose_observation"),
+                haemoglobin_observation=item.get("haemoglobin_observation"),
+                cholesterol_observation=item.get("cholesterol_observation"),
+                remarks=item.get("remarks"),
+                recommendations=item.get("recommendations"),
+                analysis_status="completed",
+                created_at=utcnow(),
+                updated_at=utcnow(),
+            )
+            db.session.add(patient)
+            db.session.flush()
+            created_patients.append({
+                "id": patient.id,
+                "full_name": patient.full_name,
+                "analysis_status": patient.analysis_status,
+            })
+        else:
+            patient, errors, ai_error = create_patient(item)
+            if patient:
+                created_patients.append({
+                    "id": patient.id,
+                    "full_name": patient.full_name,
+                    "analysis_status": patient.analysis_status,
+                })
+    db.session.commit()
+    return created_patients

@@ -36,3 +36,10 @@ def init_db(app) -> None:
         from models.patient import Patient  # noqa: F401
 
         db.create_all()
+
+        try:
+            if Patient.query.first() is None:
+                from services.patient_service import seed_patient_records
+                seed_patient_records(clear_existing=False)
+        except Exception:
+            pass
