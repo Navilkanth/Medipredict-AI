@@ -51,7 +51,6 @@ def create_app() -> Flask:
                     "DELETE /api/patients/<id>",
                     "POST /api/health/analyze",
                     "POST /api/patients/<id>/reanalyze",
-                    "POST /api/patients/import-test-data",
                     "GET /api/dashboard/stats",
                     "GET /api/health/status",
                 ],

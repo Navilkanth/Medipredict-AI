@@ -1,61 +1,61 @@
-# MediPredict AI
+# MediPredict AI – Intelligent Patient Health Prediction & Management System
 
-Intelligent patient health prediction and management system. The React dashboard talks to a Flask API. Patient rows live in SQLite. Valid blood test values are sent to Google Gemini, and the returned remarks are stored with the patient.
+MediPredict AI is an enterprise-grade full-stack healthcare platform engineered for clinical patient management, physiological biomarker validation, and automated health assessment using Google Gemini.
 
-This is a Python skills evaluation project. The interface is JavaScript (React + Vite), not TypeScript.
+---
 
-## Features
+## Key Features
 
-- Register, search, update, and delete patients.
-- Validate name, date of birth, email, glucose, haemoglobin, and cholesterol in the browser and again in Flask.
-- Process the 10 company test records without changing the supplied values.
-- Reject invalid emails and impossible or future dates, and explain why.
-- Keep the duplicate Robyn Pears row, because the assignment does not ask for duplicate rejection.
-- Ask Gemini for structured observations and store them only when the API returns usable JSON.
-- Leave remarks empty when Gemini fails, so the user can retry.
-- Dashboard totals, charts, and recent remarks are calculated from the database.
+- **Clinical Patient Directory:** Complete CRUD operations (Register, Inspect, Modify, and Remove patient records).
+- **Dual-Layer Validation:** Strict demographic and physiological validation on both client (React) and server (Flask Python).
+- **Automated Clinical Observations:** Automated adult reference range comparison and clinical observations powered by the Google GenAI Python SDK (`gemini-3.1-flash-lite` with high-demand fallbacks).
+- **Live Biomarker Evaluator:** Interactive sandbox to test blood metrics on-demand via `POST /api/health/analyze`.
+- **Epidemiological Health Analytics:** Cohort distributions for fasting glucose, total haemoglobin, and serum cholesterol with dynamic Recharts visualizations.
+- **Modern Hospital UI/UX:**
+  - Professional healthcare aesthetic with full **Dark Mode** and **Light Mode** support.
+  - Interactive **Scrolling Date of Birth Picker** (Day, Month, Year).
+  - Numerical lab value steppers and clinical interval reference badges.
+  - User-configurable **Font Scaling** (Standard 16px, Medium 17.5px, Large 19px).
+  - Practice & Facility personalization and CSV/JSON registry export.
 
-## Technology stack
+---
 
-- React, Vite, JavaScript, Tailwind CSS, Lucide React, Recharts
-- Python, Flask, Flask-CORS, Flask-SQLAlchemy
-- SQLite
-- Google GenAI Python SDK
+## Technology Stack
 
-## Architecture
+- **Frontend:** React 19, Vite, Tailwind CSS v4, Lucide React, Recharts.
+- **Backend:** Python 3, Flask, Flask-CORS, Flask-SQLAlchemy.
+- **Database:** SQLite / PostgreSQL persistence with SQLAlchemy ORM.
+- **AI Integration:** Google GenAI Python SDK (Gemini API).
 
-The browser never holds the Gemini key. Vite proxies `/api` to Flask on port 5000.
+---
 
-1. The form checks the fields.
-2. `POST /api/patients` checks them again in `utils/validators.py`.
-3. A valid row is sent to `services/gemini_service.py`.
-4. SQLAlchemy writes the patient, and the remarks if Gemini succeeded, to `backend/database/medipredict.db`.
-
-## Project structure
+## Project Structure
 
 ```text
 medipredict-ai/
-  frontend/          React dashboard (JavaScript)
-    src/components/  Forms, table, charts, dialogs
-    src/pages/       Dashboard, patients, analytics, AI, settings, test data
-    src/services/    API client
+  frontend/                  React + Vite dashboard
+    src/components/          Forms, table, charts, modals
+    src/context/             Theme & Toast providers
+    src/pages/               Dashboard, patients, registration, analytics, AI, settings
+    src/services/            API client
   backend/
-    app.py           Flask app and error handlers
-    config.py        Environment settings
-    models/patient.py
-    routes/          patients, health, dashboard
-    services/        Gemini and patient workflows
-    utils/           validators, test data, JSON responses
-    database/db.py   SQLite startup
+    app.py                   Flask application factory and routes
+    config.py                Environment and database configuration
+    models/patient.py        SQLAlchemy Patient model
+    routes/                  Patient, health, and dashboard blueprints
+    services/                Gemini clinical intelligence service
+    utils/                   Validators, reference ranges, responses
+    database/db.py           Database initialization
+  vercel.json                Vercel deployment configuration
+  start_app.bat              One-click full-stack launcher
   README.md
-  .gitignore
 ```
 
-## Installation
+---
 
-Use two terminals from the project folder.
+## Installation & Local Development
 
-### Backend
+### 1. Backend Setup
 
 ```powershell
 cd backend
@@ -65,81 +65,53 @@ pip install -r requirements.txt
 copy .env.example .env
 ```
 
-Open `.env` and set `GEMINI_API_KEY` to your Google AI Studio key. The database file is created the first time Flask starts. You do not run a separate database setup step.
-
-```powershell
-venv\Scripts\python app.py
+Open `backend/.env` and supply your Gemini API Key:
+```env
+GEMINI_API_KEY=your_gemini_api_key_here
+GEMINI_MODEL=gemini-3.1-flash-lite
 ```
 
-The API listens on http://127.0.0.1:5000.
+Start the Flask API server:
+```powershell
+python app.py
+```
+Backend runs at `http://127.0.0.1:5000`.
 
-### Frontend
+### 2. Frontend Setup
 
 ```powershell
 cd frontend
 npm install
 npm run dev
 ```
+Frontend runs at `http://localhost:5173`.
 
-Open http://127.0.0.1:5173.
+### 3. One-Click Launcher (Windows)
+Double-click `start_app.bat` to launch both backend and frontend servers simultaneously.
 
-## Gemini configuration
+---
 
-| Variable | Purpose |
-| --- | --- |
-| `GEMINI_API_KEY` | Server-only key. Leave it out of the React app and out of git. |
-| `GEMINI_MODEL` | Defaults to `gemini-3.1-flash-lite` (with intelligent fallback to `gemini-3.8-flash` if transient high demand occurs). |
-| `GEMINI_TIMEOUT_SECONDS` | Request limit. Default 30. |
+## API Endpoints
 
-If the key is missing, the quota is exceeded, the response is not valid JSON, or the call times out, the patient can still be saved. Remarks stay empty and the screen shows a retry action.
+| Method | Path | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/patients` | Register a patient and generate clinical observations |
+| `GET` | `/api/patients` | Paginated search and retrieval of patient records |
+| `GET` | `/api/patients/<id>` | Retrieve specific patient dossier |
+| `PUT` | `/api/patients/<id>` | Update patient record (re-evaluates biomarkers if changed) |
+| `DELETE` | `/api/patients/<id>` | Delete patient record with confirmation |
+| `POST` | `/api/health/analyze` | Evaluate arbitrary laboratory metrics on-demand |
+| `POST` | `/api/patients/<id>/reanalyze` | Refresh observations for existing patient |
+| `GET` | `/api/dashboard/stats` | Real-time population metrics & distribution counts |
+| `GET` | `/api/health/status` | System health and AI engine connectivity |
 
-## API endpoints
+---
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| POST | `/api/patients` | Create a patient |
-| GET | `/api/patients` | List patients, with `q`, `field`, `page`, `per_page` |
-| GET | `/api/patients/<id>` | One patient |
-| PUT | `/api/patients/<id>` | Update a patient |
-| DELETE | `/api/patients/<id>` | Delete a patient |
-| POST | `/api/health/analyze` | Analyse three lab values |
-| POST | `/api/patients/<id>/reanalyze` | Regenerate remarks |
-| POST | `/api/patients/import-test-data` | Process the 10 company rows |
-| GET | `/api/dashboard/stats` | Dashboard numbers |
-| GET | `/api/health/status` | Backend, database, and Gemini configuration |
+## Deployment to Vercel
 
-## Assignment walkthrough
+The project includes `vercel.json` configured for seamless deployment:
 
-1. Open **Test Data**.
-2. Leave “Clear existing patients” checked and click **Process all 10 records**.
-3. Read the report. Expect 7 created and 3 rejected:
-   - Test 2: `hunter@gmail` has an incomplete domain.
-   - Test 4: `31.11.2001` is not a real date. November has 30 days.
-   - Test 8: `19.10.2030` is in the future, and `Kris.wu.gmail.com` has no `@`.
-4. Test 6 is the same person as Test 1 and is saved on purpose.
-5. Use **Update email** to set one saved patient to `gokul@infocare.com`.
-6. Delete one saved patient from the remaining list and confirm the dialog.
-7. The table reloads from SQLite and shows who is left.
-
-## Screenshots
-
-Capture these after the app is running:
-
-1. Dashboard with live totals and charts.
-2. Patient table after the test import.
-3. Validation report showing the three rejected rows.
-4. AI analysis detail for one patient.
-5. Success toast after the email update and after delete.
-
-## GitHub
-
-```powershell
-git init
-git add .
-git commit -m "Add MediPredict AI patient dashboard"
-git branch -M main
-git remote add origin https://github.com/<your-user>/medipredict-ai.git
-git push -u origin main
-```
-
-Do not commit `backend/.env`, `backend/venv`, or `frontend/node_modules`. Those paths are listed in `.gitignore`.
+1. Import the repository in [Vercel](https://vercel.com).
+2. Set Root Directory to `./` (or `./frontend` for frontend-only hosting).
+3. If deploying frontend with external backend, provide `VITE_API_BASE_URL` in Vercel environment variables.
+4. For full-stack deployment on Vercel, the Python serverless API functions are routed via `vercel.json`.

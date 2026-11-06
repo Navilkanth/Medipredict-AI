@@ -10,7 +10,6 @@ from __future__ import annotations
 from database.db import db
 from models.patient import Patient, utcnow
 from services.gemini_service import GeminiServiceError, analyze_blood_tests
-from utils.test_data import COMPANY_TEST_RECORDS
 from utils.validators import validate_patient_payload
 
 
@@ -124,67 +123,3 @@ def reanalyze_patient(patient: Patient) -> GeminiServiceError | None:
 def delete_patient(patient: Patient) -> None:
     db.session.delete(patient)
     db.session.commit()
-
-
-def import_company_records(reset: bool = False) -> dict:
-    """Attempt every company row. Invalid rows are reported and not saved."""
-    if reset:
-        db.session.query(Patient).delete()
-        db.session.commit()
-
-    results = []
-    created = 0
-    rejected = 0
-
-    for record in COMPANY_TEST_RECORDS:
-        original = {
-            "full_name": record["full_name"],
-            "dob": record["dob"],
-            "email": record["email"],
-            "glucose": record["glucose"],
-            "haemoglobin": record["haemoglobin"],
-            "cholesterol": record["cholesterol"],
-        }
-        cleaned, errors = validate_patient_payload(record)
-        if errors:
-            rejected += 1
-            results.append(
-                {
-                    "test_id": record["test_id"],
-                    "input": original,
-                    "status": "rejected",
-                    "errors": errors,
-                    "patient_id": None,
-                    "ai_status": "skipped",
-                    "note": "Invalid records are not saved and are not sent to Gemini.",
-                }
-            )
-            continue
-
-        patient, _, ai_error = create_patient(record)
-        created += 1
-        note = None
-        if record["test_id"] == 6:
-            note = (
-                "This row repeats Test 1. It was saved because the assignment "
-                "does not ask the application to reject duplicates."
-            )
-        results.append(
-            {
-                "test_id": record["test_id"],
-                "input": original,
-                "status": "created",
-                "errors": {},
-                "patient_id": patient.id if patient else None,
-                "ai_status": patient.analysis_status if patient else "failed",
-                "ai_error": ai_error.public_message if ai_error else None,
-                "note": note,
-            }
-        )
-
-    return {
-        "attempted": len(COMPANY_TEST_RECORDS),
-        "created": created,
-        "rejected": rejected,
-        "results": results,
-    }

@@ -1,8 +1,15 @@
 backend/venv/
 backend/.env
+.env
+.env.local
 backend/database/*.db
+*.db
 backend/**/__pycache__/
+**/__pycache__/
+*.pyc
 frontend/node_modules/
 frontend/dist/
+dist/
+.vercel
 .DS_Store
 *.log

@@ -8,10 +8,12 @@ export class ApiError extends Error {
   }
 }
 
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "")
+
 async function request(path, init) {
   let response
   try {
-    response = await fetch(path, {
+    response = await fetch(`${API_BASE}${path}`, {
       ...init,
       headers: {
         "Content-Type": "application/json",
@@ -68,13 +70,6 @@ export function analyzeHealth(payload) {
 
 export function reanalyzePatient(id) {
   return request(`/api/patients/${id}/reanalyze`, { method: "POST" })
-}
-
-export function importTestData(reset) {
-  return request("/api/patients/import-test-data", {
-    method: "POST",
-    body: JSON.stringify({ reset }),
-  })
 }
 
 export function getDashboard() {

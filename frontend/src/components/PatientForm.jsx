@@ -112,7 +112,7 @@ export function PatientForm({ initial, submitLabel, onSubmit }) {
               <input
                 value={values.full_name}
                 type="text"
-                placeholder="e.g. Robyn Pears"
+                placeholder="e.g. Jane Doe"
                 onChange={(event) => update("full_name", event.target.value)}
                 className={`w-full rounded-xl border bg-white px-3.5 py-2.5 text-base font-medium outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-100 dark:bg-[#111827] dark:text-white dark:focus:ring-sky-900/40 ${
                   errors.full_name

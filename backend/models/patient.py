@@ -1,7 +1,7 @@
 """Patient table.
 
-One row is one registered patient plus the latest AI observations.
-Invalid company test rows are never inserted.
+One row is one registered patient plus the latest clinical observations.
+Invalid patient records are rejected by validation and never inserted.
 """
 
 from __future__ import annotations

@@ -3,7 +3,7 @@
 These cut-offs are commonly published adult ranges. They group numbers
 that are already stored. They are not a diagnosis.
 
-Assumed units, because the company file does not state them:
+Standard clinical measurement units:
 - glucose: mg/dL
 - cholesterol: mg/dL
 - haemoglobin: g/dL

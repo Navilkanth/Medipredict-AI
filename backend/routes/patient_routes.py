@@ -1,4 +1,4 @@
-"""Patient CRUD and the company test-data import."""
+"""Patient management REST endpoints."""
 
 from __future__ import annotations
 
@@ -10,7 +10,6 @@ from models.patient import Patient
 from services.patient_service import (
     create_patient,
     delete_patient,
-    import_company_records,
     reanalyze_patient,
     update_patient,
 )
@@ -140,16 +139,3 @@ def post_reanalyze(patient_id: int):
     if ai_error:
         return fail(ai_error.public_message, ai_error.http_status, code=ai_error.code)
     return ok(patient.to_dict(), "Clinical observations generated.")
-
-
-@patient_bp.post("/patients/import-test-data")
-def post_import():
-    body = request.get_json(silent=True) or {}
-    if not isinstance(body, dict):
-        return fail("Request body must be a JSON object.", 400)
-    reset = bool(body.get("reset"))
-    report = import_company_records(reset=reset)
-    return ok(
-        report,
-        "Company test records processed. Invalid rows were not saved.",
-    )

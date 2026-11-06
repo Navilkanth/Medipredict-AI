@@ -1,22 +1,13 @@
 """Server-side patient validation.
 
 The React form repeats these checks so the user gets instant feedback.
-The API still checks every field. A request can skip the browser
-(the test-data import, curl, or a modified client).
-
-Records that must fail, using the company text unchanged:
-
-- Test 2, email hunter@gmail
-  There is an @ sign, but the domain has no dot and no suffix such as .com.
-- Test 4, date 31.11.2001
-  31 November is not a calendar date. November has 30 days.
-- Test 8, date 19.10.2030
-  The date of birth is after today.
-- Test 8, email Kris.wu.gmail.com
-  There is no @ sign, so this is not an email address.
-
-Test 6 repeats Test 1. That is allowed. Nothing in the assignment
-says a duplicate name or email should be rejected.
+The API still validates every field independently on the server.
+Validation enforces:
+- Full name required, max 120 characters
+- Valid RFC-5322 email syntax with complete domain
+- Real calendar date of birth (valid days per month, leap years)
+- DOB cannot be in the future
+- Strictly numeric, non-negative lab values (Glucose, Haemoglobin, Cholesterol)
 """
 
 from __future__ import annotations
