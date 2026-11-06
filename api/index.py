@@ -18,3 +18,4 @@ if not os.getenv("DATABASE_URL") and os.getenv("VERCEL"):
 from app import create_app
 
 app = create_app()
+

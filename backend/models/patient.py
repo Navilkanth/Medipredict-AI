@@ -1,4 +1,5 @@
-"""Patient table.
+
+"""Patient model.
 
 One row is one registered patient plus the latest clinical observations.
 Invalid patient records are rejected by validation and never inserted.
