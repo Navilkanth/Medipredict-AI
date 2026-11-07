@@ -2,7 +2,7 @@
 
 MediPredict AI is an enterprise-grade full-stack healthcare platform engineered for clinical patient management, physiological biomarker validation, and automated health assessment using Google Gemini.
 
-Live:  https://medipredict-d8iaquggv-navilkanths-projects.vercel.app/
+Live:  https://medipredict-ai-beta-five.vercel.app/
 ---
 
 ## Key Features
