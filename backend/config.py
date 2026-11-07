@@ -40,7 +40,12 @@ class Config:
         os.getenv("DATABASE_URL", DEFAULT_SQLITE_URL)
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
+    GEMINI_API_KEY = (
+        os.getenv("GEMINI_API_KEY")
+        or os.getenv("gemini")
+        or os.getenv("GEMINI")
+        or ""
+    ).strip()
     GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite").strip()
     GEMINI_TIMEOUT_SECONDS = int(os.getenv("GEMINI_TIMEOUT_SECONDS", "30"))
     PORT = int(os.getenv("PORT", "5000"))
