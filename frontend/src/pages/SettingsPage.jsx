@@ -11,13 +11,11 @@ import {
   Save,
   Sliders,
   Sparkles,
-  Database,
-  RefreshCw,
 } from "lucide-react"
 import { PageCard } from "../components/ui"
 import { useTheme } from "../context/ThemeContext"
 import { useToast } from "../context/ToastContext"
-import { getPatients, seedDatabase } from "../services/api"
+import { getPatients } from "../services/api"
 
 export function SettingsPage() {
   const { theme, toggleTheme, fontSize, setFontSize, settings, updateSettings } = useTheme()
@@ -33,19 +31,6 @@ export function SettingsPage() {
   })
 
   const [downloading, setDownloading] = useState(false)
-  const [seeding, setSeeding] = useState(false)
-
-  async function handleSeedDatabase() {
-    setSeeding(true)
-    try {
-      const res = await seedDatabase(true)
-      notify("success", res.message || "Successfully seeded 10 patient records into live database!")
-    } catch (err) {
-      notify("error", err.message || "Failed to seed live database.")
-    } finally {
-      setSeeding(false)
-    }
-  }
 
   function handleChange(key, val) {
     setFormValues((prev) => ({ ...prev, [key]: val }))
@@ -353,63 +338,38 @@ export function SettingsPage() {
         </PageCard>
       </form>
 
-      {/* Data Management & Export Card */}
+      {/* Data Export Card */}
       <PageCard
-        title="Clinical Data Management"
-        subtitle="Securely export patient registry and laboratory observations for EMR archival, or seed live demonstration data."
+        title="Data Export"
+        subtitle="Securely export patient registry and laboratory observations for EMR archival."
       >
-        <div className="space-y-6">
-          {/* Seed Database */}
-          <div className="flex flex-col gap-4 rounded-2xl border border-sky-100/80 bg-sky-50/50 p-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 dark:bg-slate-800/40">
-            <div>
-              <div className="flex items-center gap-2">
-                <Database className="size-4 text-sky-600 dark:text-sky-400" />
-                <p className="font-bold text-[#0f2744] dark:text-white">Seed Live Clinical Database</p>
-              </div>
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                Populate or reset the database with 10 standard patient records containing complete blood biomarker profiles and verified AI observations for live testing.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleSeedDatabase}
-              disabled={seeding}
-              className="flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-sky-700 disabled:opacity-60 dark:bg-sky-500 dark:hover:bg-sky-600 shrink-0"
-            >
-              <RefreshCw className={`size-4 ${seeding ? "animate-spin" : ""}`} />
-              {seeding ? "Seeding Database..." : "Seed 10 Records to Live DB"}
-            </button>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="font-bold text-[#0f2744] dark:text-white">Export Patient Registry</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Download complete patient records, blood test results, and clinical remarks.
+            </p>
           </div>
 
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pt-2">
-            <div>
-              <p className="font-bold text-[#0f2744] dark:text-white">Export Patient Registry</p>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                Download complete patient records, blood test results, and clinical remarks.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={handleExportCSV}
-                disabled={downloading}
-                className="flex items-center gap-2 rounded-xl border border-sky-100 bg-white px-4 py-2.5 text-sm font-bold text-sky-800 shadow-sm transition hover:bg-sky-50 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-sky-300 dark:hover:bg-slate-700"
-              >
-                <Download className="size-4" />
-                Export CSV
-              </button>
-              <button
-                type="button"
-                onClick={handleExportJSON}
-                disabled={downloading}
-                className="flex items-center gap-2 rounded-xl border border-sky-100 bg-white px-4 py-2.5 text-sm font-bold text-sky-800 shadow-sm transition hover:bg-sky-50 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-sky-300 dark:hover:bg-slate-700"
-              >
-                <Download className="size-4" />
-                Export JSON
-              </button>
-            </div>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleExportCSV}
+              disabled={downloading}
+              className="flex items-center gap-2 rounded-xl border border-sky-100 bg-white px-4 py-2.5 text-sm font-bold text-sky-800 shadow-sm transition hover:bg-sky-50 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-sky-300 dark:hover:bg-slate-700"
+            >
+              <Download className="size-4" />
+              Export CSV
+            </button>
+            <button
+              type="button"
+              onClick={handleExportJSON}
+              disabled={downloading}
+              className="flex items-center gap-2 rounded-xl border border-sky-100 bg-white px-4 py-2.5 text-sm font-bold text-sky-800 shadow-sm transition hover:bg-sky-50 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-sky-300 dark:hover:bg-slate-700"
+            >
+              <Download className="size-4" />
+              Export JSON
+            </button>
           </div>
         </div>
       </PageCard>
